@@ -1,13 +1,62 @@
+# Base configuration from original project
 [phases.setup]
 nixPkgs = [
-  "bash-completion",
-  "less",
-  "vim",
-  "git",
-  "htop",
-  "tree",
-  "jq"
+    "nodejs_22",
+    "pnpm-9_x",
+    # Terminal utilities
+    "bash-completion",
+    "vim",
+    "less",
+    "git",
+    "htop",
+    "tree",
+    "jq",
+    "ncdu",
+    "ripgrep",
+    "fzf",
+    "fd"
 ]
 
+[phases.install]
+cmds = [
+    "npm install -g corepack@0.24.1 && corepack enable",
+    "pnpm i --frozen-lockfile"
+]
+
+[phases.build]
+cmds = ["pnpm run build"]
+
 [start]
-cmd = "bash -c 'echo \"source /etc/bash_completion\" >> ~/.bashrc && echo \"alias ls=\\\"ls --color=auto\\\"\" >> ~/.bashrc && echo \"export PS1=\\\"\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ \\\"\" >> ~/.bashrc && pnpm run start'"
+cmd = """
+    bash -c '
+    # Create .env.local file if it doesnt exist and ANTHROPIC_API_KEY is set
+    if [ ! -f .env.local ] && [ ! -z "$ANTHROPIC_API_KEY" ]; then
+        echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" > .env.local
+        echo "Created .env.local file with API key"
+    fi
+
+    # Set up bash configuration
+    echo "source /etc/bash_completion" >> ~/.bashrc &&
+    echo "export TERM=xterm-256color" >> ~/.bashrc &&
+    echo "alias ls=\"ls --color=auto\"" >> ~/.bashrc &&
+    echo "alias ll=\"ls -l\"" >> ~/.bashrc &&
+    echo "alias la=\"ls -la\"" >> ~/.bashrc &&
+    echo "alias ..=\"cd ..\"" >> ~/.bashrc &&
+    echo "alias ...=\"cd ../..\"" >> ~/.bashrc &&
+    echo "alias grep=\"grep --color=auto\"" >> ~/.bashrc &&
+    echo "export HISTSIZE=10000" >> ~/.bashrc &&
+    echo "export HISTFILESIZE=20000" >> ~/.bashrc &&
+    echo "export HISTCONTROL=ignoreboth:erasedups" >> ~/.bashrc &&
+    echo "shopt -s histappend" >> ~/.bashrc &&
+    echo "export PS1=\"\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ \"" >> ~/.bashrc &&
+    
+    # Set up inputrc
+    echo -e "\\e[A: history-search-backward\\n\\e[B: history-search-forward\\nset completion-ignore-case on\\nset show-all-if-ambiguous on\\nset colored-stats on" >> ~/.inputrc &&
+    
+    # Start the application
+    exec pnpm run start
+    '
+"""
+
+[variables]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY}"
