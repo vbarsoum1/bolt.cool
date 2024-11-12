@@ -25,51 +25,7 @@ cmds = [
 cmds = ["pnpm run build"]
 
 [start]
-cmd = '''
-#!/bin/bash
-# Create .env.local if needed
-if [ ! -f .env.local ] && [ ! -z "$ANTHROPIC_API_KEY" ]; then
-    echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" > .env.local
-    echo "Created .env.local file with API key"
-fi
-
-# Set up bash configuration
-cat > ~/.bashrc << 'EOBASHRC'
-# Terminal settings
-source /etc/bash_completion
-export TERM=xterm-256color
-
-# Aliases
-alias ls='ls --color=auto'
-alias ll='ls -l'
-alias la='ls -la'
-alias ..='cd ..'
-alias ...='cd ../..'
-alias grep='grep --color=auto'
-
-# History settings
-export HISTSIZE=10000
-export HISTFILESIZE=20000
-export HISTCONTROL=ignoreboth:erasedups
-shopt -s histappend
-
-# Colored prompt
-PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-EOBASHRC
-
-# Set up inputrc
-cat > ~/.inputrc << 'EOINPUTRC'
-"\e[A": history-search-backward
-"\e[B": history-search-forward
-set completion-ignore-case on
-set show-all-if-ambiguous on
-set colored-stats on
-EOINPUTRC
-
-# Start the application
-source ~/.bashrc
-exec pnpm run start
-'''
+cmd = "sh -c 'echo \"source /etc/bash_completion\" >> ~/.bashrc && echo \"export TERM=xterm-256color\" >> ~/.bashrc && echo \"alias ls=\\\"ls --color=auto\\\"\" >> ~/.bashrc && echo \"PS1=\\\"\\\\[\\\\033[01;32m\\\\]\\\\u@\\\\h\\\\[\\\\033[00m\\\\]:\\\\[\\\\033[01;34m\\\\]\\\\w\\\\[\\\\033[00m\\\\]\\\\$ \\\"\" >> ~/.bashrc && if [ ! -f .env.local ] && [ ! -z \"$ANTHROPIC_API_KEY\" ]; then echo \"ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY\" > .env.local; fi && source ~/.bashrc && exec pnpm run start'"
 
 [variables]
 ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY}"
